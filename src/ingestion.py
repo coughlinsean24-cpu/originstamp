@@ -17,8 +17,10 @@ from src.config import (
 from src.database import (
     get_tracked_accounts, insert_tweet, insert_entities, insert_urls,
     find_similar_tweets, create_canonical_event, add_repost,
-    update_account_metrics, init_database
+    update_account_metrics, init_database, get_event_timeline
 )
+from src.bot import post_original_report, reply_to_repost
+from src.config import POST_ORIGINAL_REPORTS, REPLY_TO_REPOSTS
 from src.fingerprinting import create_tweet_fingerprint
 from src.similarity import classify_tweet
 from src.utils.timezone import convert_to_et, parse_twitter_timestamp
@@ -142,6 +144,22 @@ class TweetProcessor:
                 classification['canonical_event_id'] = event_id
                 logger.info(f"NEW ORIGINAL: @{author} - {text[:50]}...")
 
+                # Post to X about the original report
+                if POST_ORIGINAL_REPORTS:
+                    try:
+                        event_data = {
+                            'id': event_id,
+                            'claim_summary': text[:200],
+                            'first_display_time': et_info['display_time'],
+                            'first_author': author,
+                            'author_reliability': author_reliability
+                        }
+                        posted_id = post_original_report(event_data)
+                        if posted_id:
+                            logger.info(f"Posted original report: {posted_id}")
+                    except Exception as e:
+                        logger.error(f"Failed to post original report: {e}")
+
             elif classification['status'] in ['REPOST', 'UPDATE']:
                 # Link to existing canonical event
                 if classification.get('canonical_event_id'):
@@ -154,6 +172,21 @@ class TweetProcessor:
                         classification['time_delta_display'],
                         classification['added_new_info']
                     )
+
+                    # Reply to repost if enabled
+                    if REPLY_TO_REPOSTS and classification['status'] == 'REPOST':
+                        try:
+                            timeline = get_event_timeline(classification['canonical_event_id'])
+                            if timeline and timeline.get('event'):
+                                event = timeline['event']
+                                event['time_delta_display'] = classification['time_delta_display']
+                                event['repost_count'] = event.get('repost_count', 0)
+                                reply_id = reply_to_repost(tweet_id, event)
+                                if reply_id:
+                                    logger.info(f"Replied to repost: {reply_id}")
+                        except Exception as e:
+                            logger.error(f"Failed to reply to repost: {e}")
+
                 logger.info(
                     f"{classification['status']}: @{author} - "
                     f"Original by @{classification['original_source']} "
