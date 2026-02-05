@@ -51,7 +51,7 @@ def run_worker(mode: str = 'poll', interval: int = 60):
         mode: 'stream' for real-time streaming, 'poll' for periodic polling
         interval: Polling interval in seconds (only for poll mode)
     """
-    logger.info(f"Starting OriginStamp worker in {mode} mode...")
+    logger.info(f"Starting OriginStamp worker in {mode} mode (interval={interval}s)...")
 
     # Setup database
     setup_database()
