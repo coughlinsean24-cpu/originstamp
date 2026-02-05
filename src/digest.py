@@ -19,7 +19,7 @@ _pending_headlines: deque = deque(maxlen=50)
 _lock = threading.Lock()
 
 # Digest settings
-DIGEST_INTERVAL_MINUTES = 30  # Post digest every 30 min
+DIGEST_INTERVAL_MINUTES = 15  # Post digest every 15 min
 MIN_HEADLINES_FOR_DIGEST = 1  # Minimum headlines to trigger a digest
 MAX_HEADLINES_PER_DIGEST = 5  # Max headlines in one tweet
 IMPORTANCE_KEYWORDS = [
