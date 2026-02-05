@@ -17,10 +17,10 @@ from src.config import (
 from src.database import (
     get_tracked_accounts, insert_tweet, insert_entities, insert_urls,
     find_similar_tweets, create_canonical_event, add_repost,
-    update_account_metrics, init_database, get_event_timeline
+    update_account_metrics, init_database
 )
-from src.bot import post_original_report, reply_to_repost
-from src.config import POST_ORIGINAL_REPORTS, REPLY_TO_REPOSTS
+from src.digest import add_headline, check_digest_timer
+from src.config import POST_ORIGINAL_REPORTS
 from src.fingerprinting import create_tweet_fingerprint
 from src.similarity import classify_tweet
 from src.utils.timezone import convert_to_et, parse_twitter_timestamp
@@ -144,21 +144,15 @@ class TweetProcessor:
                 classification['canonical_event_id'] = event_id
                 logger.info(f"NEW ORIGINAL: @{author} - {text[:50]}...")
 
-                # Post to X about the original report
+                # Add to digest queue (batched posting)
                 if POST_ORIGINAL_REPORTS:
-                    try:
-                        event_data = {
-                            'id': event_id,
-                            'claim_summary': text[:200],
-                            'first_display_time': et_info['display_time'],
-                            'first_author': author,
-                            'author_reliability': author_reliability
-                        }
-                        posted_id = post_original_report(event_data)
-                        if posted_id:
-                            logger.info(f"Posted original report: {posted_id}")
-                    except Exception as e:
-                        logger.error(f"Failed to post original report: {e}")
+                    add_headline({
+                        'text': text,
+                        'author': author,
+                        'display_time': et_info['display_time'],
+                        'entities': fingerprint['entities'],
+                        'event_id': event_id
+                    })
 
             elif classification['status'] in ['REPOST', 'UPDATE']:
                 # Link to existing canonical event
@@ -172,20 +166,6 @@ class TweetProcessor:
                         classification['time_delta_display'],
                         classification['added_new_info']
                     )
-
-                    # Reply to repost if enabled
-                    if REPLY_TO_REPOSTS and classification['status'] == 'REPOST':
-                        try:
-                            timeline = get_event_timeline(classification['canonical_event_id'])
-                            if timeline and timeline.get('event'):
-                                event = timeline['event']
-                                event['time_delta_display'] = classification['time_delta_display']
-                                event['repost_count'] = event.get('repost_count', 0)
-                                reply_id = reply_to_repost(tweet_id, event)
-                                if reply_id:
-                                    logger.info(f"Replied to repost: {reply_id}")
-                        except Exception as e:
-                            logger.error(f"Failed to reply to repost: {e}")
 
                 logger.info(
                     f"{classification['status']}: @{author} - "
@@ -358,6 +338,11 @@ def poll_tracked_accounts(processor: TweetProcessor, interval_seconds: int = 60)
             # Cleanup old seen IDs (keep last 10000)
             if len(seen_tweet_ids) > 10000:
                 seen_tweet_ids = set(list(seen_tweet_ids)[-5000:])
+
+            # Check if it's time to post a digest
+            digest_result = check_digest_timer()
+            if digest_result:
+                logger.info(f"Posted digest: {digest_result}")
 
             logger.info(f"Poll cycle complete. Sleeping {interval_seconds}s...")
             time.sleep(interval_seconds)
