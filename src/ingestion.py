@@ -20,7 +20,7 @@ from src.database import (
     update_account_metrics, init_database
 )
 from src.digest import add_headline, check_digest_timer
-from src.config import POST_ORIGINAL_REPORTS
+from src.mentions import check_and_process_mentions, cleanup_old_mention_ids
 from src.fingerprinting import create_tweet_fingerprint
 from src.similarity import classify_tweet
 from src.utils.timezone import convert_to_et, parse_twitter_timestamp
@@ -145,14 +145,13 @@ class TweetProcessor:
                 logger.info(f"NEW ORIGINAL: @{author} - {text[:50]}...")
 
                 # Add to digest queue (batched posting)
-                if POST_ORIGINAL_REPORTS:
-                    add_headline({
-                        'text': text,
-                        'author': author,
-                        'display_time': et_info['display_time'],
-                        'entities': fingerprint['entities'],
-                        'event_id': event_id
-                    })
+                add_headline({
+                    'text': text,
+                    'author': author,
+                    'display_time': et_info['display_time'],
+                    'entities': fingerprint['entities'],
+                    'event_id': event_id
+                })
 
             elif classification['status'] in ['REPOST', 'UPDATE']:
                 # Link to existing canonical event
@@ -344,6 +343,17 @@ def poll_tracked_accounts(processor: TweetProcessor, interval_seconds: int = 60)
             digest_result = check_digest_timer()
             if digest_result:
                 logger.info(f"Posted digest: {digest_result}")
+
+            # Check for mentions and respond to queries
+            try:
+                mentions_processed = check_and_process_mentions()
+                if mentions_processed > 0:
+                    logger.info(f"Processed {mentions_processed} mention queries")
+            except Exception as e:
+                logger.error(f"Error processing mentions: {e}")
+
+            # Periodic cleanup
+            cleanup_old_mention_ids()
 
             logger.info(f"Poll cycle complete. Sleeping {interval_seconds}s...")
             time.sleep(interval_seconds)

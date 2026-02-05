@@ -39,9 +39,9 @@ STREAM_RECONNECT_DELAY = 60  # seconds
 
 # Bot Settings
 BOT_USERNAME = os.getenv("BOT_USERNAME", "newstimestamp")
-POST_ORIGINAL_REPORTS = True
-REPLY_TO_REPOSTS = True
-POST_TIMELINE_THREADS = True
+POST_ORIGINAL_REPORTS = False  # Disabled - use digest instead (less botty)
+REPLY_TO_REPOSTS = False  # Disabled for now
+POST_TIMELINE_THREADS = False  # Disabled for now
 MIN_REPOSTS_FOR_THREAD = 5  # minimum reposts before posting timeline thread
 
 # Processing Settings

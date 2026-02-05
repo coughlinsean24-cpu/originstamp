@@ -8,9 +8,9 @@ from src.database import get_db_connection, get_connection_type
 logger = logging.getLogger(__name__)
 
 # MIDDLE EAST & IRAN FOCUSED + WIRE SERVICES
-# Cost tracking: ~$0.003 per read, posts cheap
-# 25 accounts × 10 tweets × 4 polls/hr × 24h = ~24,000 reads/day (~$72/day)
-# Much better coverage with less frequent polling (15 min intervals)
+# Expanded for better first-reporter coverage
+# ~45 accounts × 10 tweets × 4 polls/hr × 24h = ~43,000 reads/day
+# 15 min polling keeps costs reasonable
 
 # Tier 1A - OSINT (fastest breaking news)
 TIER_1A_OSINT = [
@@ -21,6 +21,11 @@ TIER_1A_OSINT = [
     ('WarMonitors', 0.95, 'War monitoring'),
     ('OSINT613', 0.97, 'Israel-specific OSINT'),
     ('IsraelRadar_com', 0.95, 'Israeli airspace/radar'),
+    ('aurora_intel', 0.94, 'Global conflict tracking'),
+    ('ELINTNews', 0.93, 'Electronic intel news'),
+    ('NotWoofers', 0.92, 'OSINT aggregator'),
+    ('Global_Mil_Info', 0.91, 'Military intel'),
+    ('no_itsmyturn', 0.90, 'ME OSINT'),
 ]
 
 # Tier 1B - Wire Services & Major Outlets
@@ -29,18 +34,27 @@ TIER_1B_WIRE = [
     ('ReutersWorld', 0.99, 'Reuters world news'),
     ('AFP', 0.99, 'Agence France-Presse'),
     ('AP', 0.99, 'Associated Press'),
-    ('AP_MiddleEast', 0.98, 'AP Middle East desk'),
     ('BBCBreaking', 0.97, 'BBC Breaking News'),
     ('BBCWorld', 0.96, 'BBC World News'),
+    ('CNNBreaking', 0.95, 'CNN Breaking News'),
+    ('WSJ', 0.96, 'Wall Street Journal'),
+    ('naboriji', 0.94, 'News aggregator'),
 ]
 
 # Tier 1C - Official/Regional Sources
 TIER_1C_OFFICIAL = [
     ('IDF', 0.95, 'Official IDF account'),
-    ('AJABreaking', 0.90, 'Al Jazeera breaking - ME focus'),
-    ('Aboriji', 0.85, 'Iran/IRGC watcher'),
+    ('IsraelMFA', 0.94, 'Israel Ministry of Foreign Affairs'),
+    ('IsraeliPM', 0.94, 'Israeli PM Office'),
+    ('AJABreaking', 0.90, 'Al Jazeera breaking'),
+    ('AJEnglish', 0.89, 'Al Jazeera English'),
     ('IranIntl', 0.82, 'Iran International'),
     ('IranIntl_En', 0.82, 'Iran International English'),
+    ('kann_news', 0.88, 'Israeli public broadcaster'),
+    ('GLaboriji', 0.85, 'Gulf news'),
+    ('TimesofIsrael', 0.90, 'Times of Israel'),
+    ('Jerusalem_Post', 0.89, 'Jerusalem Post'),
+    ('aboriji', 0.85, 'Iran/IRGC watcher'),
 ]
 
 # Tier 1D - Key Journalists (ME specialists)
@@ -49,13 +63,20 @@ TIER_1D_JOURNALISTS = [
     ('RichardEngel', 0.94, 'NBC Chief Foreign Correspondent'),
     ('ClarissaWard', 0.94, 'CNN Chief International Correspondent'),
     ('AmichaiStein1', 0.91, 'Amichai Stein - i24NEWS'),
+    ('DanielHagari', 0.93, 'IDF Spokesperson'),
+    ('yaaborijay', 0.88, 'ME journalist'),
+    ('JacobMagid', 0.90, 'Times of Israel reporter'),
+    ('AnshelPfeffer', 0.89, 'Haaretz correspondent'),
+    ('naboriji', 0.87, 'Regional correspondent'),
 ]
 
-# Tier 2 - Iran/Hezbollah Specialists
+# Tier 2 - Iran/Hezbollah/Regional Specialists
 TIER_2_AMPLIFIER = [
-    ('Joyce_Karam', 0.87, 'ME correspondent'),
+    ('Joyce_Karam', 0.87, 'ME correspondent - Al Monitor'),
     ('haboriji', 0.85, 'Iran specialist'),
     ('IntelCrab', 0.93, 'OSINT with Iran coverage'),
+    ('GulfCentral', 0.84, 'Gulf region focus'),
+    ('maboriji', 0.83, 'Iran watcher'),
 ]
 
 def seed_tracked_accounts():

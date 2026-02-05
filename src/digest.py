@@ -19,13 +19,26 @@ _pending_headlines: deque = deque(maxlen=50)
 _lock = threading.Lock()
 
 # Digest settings
-DIGEST_INTERVAL_MINUTES = 15  # Post digest every 15 min
+DIGEST_INTERVAL_MINUTES = 30  # Post digest every 30 min (poll faster, post less often)
 MIN_HEADLINES_FOR_DIGEST = 1  # Minimum headlines to trigger a digest
 MAX_HEADLINES_PER_DIGEST = 5  # Max headlines in one tweet
 IMPORTANCE_KEYWORDS = [
     'strike', 'attack', 'missile', 'drone', 'explosion', 'killed',
     'iran', 'israel', 'hezbollah', 'hamas', 'idf', 'irgc',
     'breaking', 'urgent', 'confirmed', 'official'
+]
+
+# Minimum requirements for a headline to be newsworthy
+MIN_TEXT_LENGTH = 80  # Skip short tweets (memes, reactions)
+MIN_IMPORTANCE_SCORE = 20  # Skip low-importance content
+
+# Words that indicate non-news content
+SKIP_INDICATORS = [
+    'thank you', 'thanks', 'congrats', 'happy birthday', 'rip ',
+    'lol', 'lmao', 'haha', 'omg', '😂', '🤣', 'podcast', 'latest pod',
+    'subscribe', 'follow me', 'check out', 'new episode',
+    'we are live', 'going live', 'now live', 'live now', 'discussing',
+    'tune in', 'watch live', 'stream', 'join us'
 ]
 
 
@@ -56,6 +69,34 @@ def calculate_importance(text: str, entities: List[Dict]) -> int:
     return score
 
 
+def is_newsworthy(text: str, entities: list, importance: int) -> tuple[bool, str]:
+    """
+    Check if a tweet is actual news vs meme/reaction/fluff
+    Returns (is_newsworthy, reason)
+    """
+    # Remove URLs from text for length check
+    clean_text = ' '.join(word for word in text.split() if not word.startswith('http'))
+
+    # Too short = likely meme/reaction
+    if len(clean_text) < MIN_TEXT_LENGTH:
+        return False, f"too short ({len(clean_text)} chars)"
+
+    # Check for non-news indicators
+    text_lower = text.lower()
+    for indicator in SKIP_INDICATORS:
+        if indicator in text_lower:
+            return False, f"contains '{indicator}'"
+
+    # Must have minimum importance OR meaningful entities
+    has_location = any(e.get('type') in ['GPE', 'LOC'] for e in entities)
+    has_org = any(e.get('type') in ['ORG', 'MILITARY_ORG'] for e in entities)
+
+    if importance < MIN_IMPORTANCE_SCORE and not (has_location or has_org):
+        return False, f"low importance ({importance}) and no key entities"
+
+    return True, "passed"
+
+
 def add_headline(headline_data: Dict):
     """
     Add a headline to the pending digest queue
@@ -79,18 +120,36 @@ def add_headline(headline_data: Dict):
         logger.debug(f"Skipping reply: {text[:50]}...")
         return
 
+    # Calculate importance early for filtering
+    entities = headline_data.get('entities', [])
+    importance = headline_data.get('importance')
+    if importance is None:
+        importance = calculate_importance(text, entities)
+        headline_data['importance'] = importance
+
+    # Check if newsworthy
+    is_news, reason = is_newsworthy(text, entities, importance)
+    if not is_news:
+        logger.debug(f"Skipping non-news ({reason}): {text[:50]}...")
+        return
+
     with _lock:
-        # Calculate importance if not provided
-        if 'importance' not in headline_data:
-            headline_data['importance'] = calculate_importance(
-                text,
-                headline_data.get('entities', [])
-            )
-
         headline_data['added_at'] = get_current_et()
-        _pending_headlines.append(headline_data)
 
-        logger.info(f"Queued headline (importance={headline_data['importance']}): {text[:50]}...")
+        # Deduplicate by event_id - keep the FIRST reporter only
+        event_id = headline_data.get('event_id')
+        if event_id:
+            for i, existing in enumerate(_pending_headlines):
+                if existing.get('event_id') == event_id:
+                    # Same event - keep whichever was reported first
+                    existing_time = existing.get('display_time', '')
+                    new_time = headline_data.get('display_time', '')
+                    logger.debug(f"Duplicate event {event_id}: existing @{existing.get('author')} vs new @{headline_data.get('author')}")
+                    # Keep existing (it was first), skip new one
+                    return
+
+        _pending_headlines.append(headline_data)
+        logger.info(f"Queued headline (importance={importance}): {text[:50]}...")
 
 
 def get_pending_headlines() -> List[Dict]:
@@ -109,59 +168,48 @@ def clear_pending_headlines():
         _pending_headlines.clear()
 
 
-def format_digest_tweet(headlines: List[Dict]) -> str:
+def format_digest_tweet(headlines: List[Dict]) -> Optional[str]:
     """
     Format headlines into a single digest tweet
 
-    Format:
-    MIDDLE EAST UPDATE
-
-    • Headline 1 - 12:15 PM ET (@source)
-    • Headline 2 - 12:30 PM ET (@source)
-
-    #MiddleEast #OSINT
+    Emphasizes who broke the news first
     """
     if not headlines:
         return None
 
-    lines = ["MIDDLE EAST UPDATE", ""]
+    # Post the top headline - this is whoever reported it FIRST
+    h = headlines[0]
+    text = h.get('text', '')
 
-    for h in headlines[:MAX_HEADLINES_PER_DIGEST]:
-        # Truncate headline to fit
-        text = h.get('text', '')
-        # Remove URLs and clean up
-        text = ' '.join(word for word in text.split() if not word.startswith('http'))
+    # Remove URLs and clean up
+    text = ' '.join(word for word in text.split() if not word.startswith('http'))
 
-        # Get first sentence or truncate
-        if '.' in text[:120]:
-            text = text[:text.index('.', 0, 120) + 1]
-        elif len(text) > 100:
-            text = text[:97] + "..."
+    # Remove emojis at the start (🔴, 🎯, ⭕️, etc.)
+    while text and text[0] in '🔴🎯⭕️❌🎥🇮🇱🇺🇸⚓️📰🗞️▶️⚠️✓':
+        text = text[1:].lstrip()
 
-        time_str = h.get('display_time', 'Unknown')
-        # Extract just the time part (e.g., "12:15 PM ET")
-        if ' at ' in time_str:
-            time_str = time_str.split(' at ')[1]
+    # Get first sentence or truncate
+    if '. ' in text[:200]:
+        text = text[:text.index('. ', 0, 200) + 1]
+    elif len(text) > 160:
+        text = text[:157] + "..."
 
-        author = h.get('author', 'unknown')
+    time_str = h.get('display_time', '')
+    # Extract just the time part (e.g., "5:18 PM ET")
+    if ' at ' in time_str:
+        time_str = time_str.split(' at ')[1]
 
-        lines.append(f"• {text}")
-        lines.append(f"  ↳ {time_str} via @{author}")
-        lines.append("")
+    author = h.get('author', 'unknown')
 
-    # Add hashtags
-    lines.append("#MiddleEast #Iran #OSINT")
-
-    tweet = "\n".join(lines)
+    # Format: emphasize this is the first/original report
+    attribution = f"First: @{author} • {time_str}"
+    tweet = f"{text}\n\n{attribution}"
 
     # Ensure under 280 chars
     if len(tweet) > 280:
-        # Reduce to fewer headlines
-        if len(headlines) > 1:
-            return format_digest_tweet(headlines[:-1])
-        else:
-            # Single headline, truncate more aggressively
-            tweet = tweet[:277] + "..."
+        max_text = 280 - len(f"\n\n{attribution}") - 3
+        text = text[:max_text] + "..."
+        tweet = f"{text}\n\n{attribution}"
 
     return tweet
 
