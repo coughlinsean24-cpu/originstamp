@@ -358,14 +358,13 @@ def start_stream_monitor():
     # Initialize database
     init_database()
 
+    # Always refresh tracked accounts from seed data
+    # This ensures new accounts are added when we update the code
+    from src.seed_accounts import seed_tracked_accounts
+    seed_tracked_accounts()
+
     # Create processor
     processor = TweetProcessor()
-
-    if not processor.tracked_accounts:
-        logger.warning("No tracked accounts found. Loading seed data...")
-        from src.seed_accounts import seed_tracked_accounts
-        seed_tracked_accounts()
-        processor.load_tracked_accounts()
 
     # Try streaming first, fall back to polling
     try:
