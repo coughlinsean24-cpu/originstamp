@@ -38,7 +38,6 @@ TIER_1B_WIRE = [
     ('BBCWorld', 0.96, 'BBC World News'),
     ('CNNBreaking', 0.95, 'CNN Breaking News'),
     ('WSJ', 0.96, 'Wall Street Journal'),
-    ('naboriji', 0.94, 'News aggregator'),
 ]
 
 # Tier 1C - Official/Regional Sources
@@ -51,10 +50,10 @@ TIER_1C_OFFICIAL = [
     ('IranIntl', 0.82, 'Iran International'),
     ('IranIntl_En', 0.82, 'Iran International English'),
     ('kann_news', 0.88, 'Israeli public broadcaster'),
-    ('GLaboriji', 0.85, 'Gulf news'),
     ('TimesofIsrael', 0.90, 'Times of Israel'),
     ('Jerusalem_Post', 0.89, 'Jerusalem Post'),
-    ('aboriji', 0.85, 'Iran/IRGC watcher'),
+    ('i24NEWS_EN', 0.88, 'i24 News English'),
+    ('haborijiaraborijietaborijiz', 0.85, 'Haaretz newspaper'),
 ]
 
 # Tier 1D - Key Journalists (ME specialists)
@@ -63,20 +62,18 @@ TIER_1D_JOURNALISTS = [
     ('RichardEngel', 0.94, 'NBC Chief Foreign Correspondent'),
     ('ClarissaWard', 0.94, 'CNN Chief International Correspondent'),
     ('AmichaiStein1', 0.91, 'Amichai Stein - i24NEWS'),
-    ('DanielHagari', 0.93, 'IDF Spokesperson'),
-    ('yaaborijay', 0.88, 'ME journalist'),
     ('JacobMagid', 0.90, 'Times of Israel reporter'),
     ('AnshelPfeffer', 0.89, 'Haaretz correspondent'),
-    ('naboriji', 0.87, 'Regional correspondent'),
+    ('LizSly', 0.91, 'Washington Post ME bureau chief'),
+    ('ragaborijipsoylu', 0.88, 'Turkey/ME journalist'),
 ]
 
 # Tier 2 - Iran/Hezbollah/Regional Specialists
 TIER_2_AMPLIFIER = [
     ('Joyce_Karam', 0.87, 'ME correspondent - Al Monitor'),
-    ('haboriji', 0.85, 'Iran specialist'),
     ('IntelCrab', 0.93, 'OSINT with Iran coverage'),
-    ('GulfCentral', 0.84, 'Gulf region focus'),
-    ('maboriji', 0.83, 'Iran watcher'),
+    ('JasonMBrodsky', 0.86, 'Iran policy analyst'),
+    ('Ali_Vaez', 0.85, 'ICG Iran analyst'),
 ]
 
 def seed_tracked_accounts():
