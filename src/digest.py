@@ -67,18 +67,30 @@ def add_headline(headline_data: Dict):
     - importance: Calculated importance score
     - entities: Extracted entities
     """
+    text = headline_data.get('text', '')
+
+    # Skip RTs - X blocks posting RT content as new tweets
+    if text.startswith('RT @'):
+        logger.debug(f"Skipping RT: {text[:50]}...")
+        return
+
+    # Skip replies
+    if text.startswith('@'):
+        logger.debug(f"Skipping reply: {text[:50]}...")
+        return
+
     with _lock:
         # Calculate importance if not provided
         if 'importance' not in headline_data:
             headline_data['importance'] = calculate_importance(
-                headline_data.get('text', ''),
+                text,
                 headline_data.get('entities', [])
             )
 
         headline_data['added_at'] = get_current_et()
         _pending_headlines.append(headline_data)
 
-        logger.info(f"Queued headline (importance={headline_data['importance']}): {headline_data.get('text', '')[:50]}...")
+        logger.info(f"Queued headline (importance={headline_data['importance']}): {text[:50]}...")
 
 
 def get_pending_headlines() -> List[Dict]:

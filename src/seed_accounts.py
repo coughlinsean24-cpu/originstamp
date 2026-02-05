@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # MIDDLE EAST & IRAN FOCUSED + WIRE SERVICES
 # Cost tracking: ~$0.003 per read, posts cheap
-# 29 accounts × 10 tweets × 4 polls/hr × 24h = ~27,840 reads/day (~$84/day)
+# 25 accounts × 10 tweets × 4 polls/hr × 24h = ~24,000 reads/day (~$72/day)
 # Much better coverage with less frequent polling (15 min intervals)
 
 # Tier 1A - OSINT (fastest breaking news)
@@ -39,19 +39,16 @@ TIER_1C_OFFICIAL = [
     ('IDF', 0.95, 'Official IDF account'),
     ('AJABreaking', 0.90, 'Al Jazeera breaking - ME focus'),
     ('Aboriji', 0.85, 'Iran/IRGC watcher'),
-    ('Iran_Int_TV', 0.82, 'Iran International'),
+    ('IranIntl', 0.82, 'Iran International'),
     ('IranIntl_En', 0.82, 'Iran International English'),
 ]
 
 # Tier 1D - Key Journalists (ME specialists)
 TIER_1D_JOURNALISTS = [
-    ('baboramus', 0.92, 'Barak Ravid - Axios Israel'),
+    ('BarakRavid', 0.92, 'Barak Ravid - Axios Israel'),
     ('RichardEngel', 0.94, 'NBC Chief Foreign Correspondent'),
     ('ClarissaWard', 0.94, 'CNN Chief International Correspondent'),
-    ('ragikipling', 0.90, 'Ragi Kipling - ME journalist'),
-    ('yaaboroham', 0.88, 'Yoav Limor - Israel defense correspondent'),
     ('AmichaiStein1', 0.91, 'Amichai Stein - i24NEWS'),
-    ('eaborukah', 0.87, 'Evan Hill - NYT visual investigations'),
 ]
 
 # Tier 2 - Iran/Hezbollah Specialists

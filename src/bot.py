@@ -66,8 +66,16 @@ def post_tweet(text: str, reply_to: str = None) -> Optional[str]:
             return str(tweet_id)
         return None
 
+    except tweepy.errors.Forbidden as e:
+        logger.error(f"403 Forbidden posting tweet: {e}")
+        logger.error(f"Failed tweet text: {text[:100]}...")
+        return None
+    except tweepy.errors.TooManyRequests as e:
+        logger.error(f"Rate limited: {e}")
+        return None
     except Exception as e:
         logger.error(f"Error posting tweet: {e}")
+        logger.error(f"Failed tweet text: {text[:100]}...")
         return None
 
 
