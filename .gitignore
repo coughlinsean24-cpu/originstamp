@@ -1,0 +1,42 @@
+# Environment
+.env
+.env.local
+*.pyc
+__pycache__/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Token storage
+tokens.json
+
+# Database (local SQLite)
+*.db
+*.sqlite
+*.sqlite3
+originstamp.db
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# OS files
+.DS_Store
+Thumbs.db

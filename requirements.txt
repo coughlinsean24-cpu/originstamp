@@ -1,0 +1,27 @@
+# Web framework
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# X API
+tweepy>=4.14.0
+
+# Database
+psycopg2-binary>=2.9.9
+
+# NLP/ML
+spacy>=3.7.2
+sentence-transformers>=2.2.2
+
+# Image processing (for media hashing)
+imagehash>=4.3.1
+Pillow>=10.1.0
+
+# Utilities
+langdetect>=1.0.9
+pytz>=2023.3
+python-dotenv>=1.0.0
+requests>=2.31.0
+schedule>=1.2.1
+
+# Data validation
+pydantic>=2.5.0

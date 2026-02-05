@@ -1,0 +1,78 @@
+# Render Blueprint Configuration for OriginStamp
+# Deploy with: render blueprint sync
+
+services:
+  # Background Worker (Main Tweet Monitor)
+  - type: worker
+    name: originstamp-worker
+    runtime: python
+    region: oregon
+    plan: starter
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m spacy download en_core_web_sm
+    startCommand: python -m src.main worker --mode poll --interval 60
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: originstamp-db
+          property: connectionString
+      - key: X_API_KEY
+        sync: false
+      - key: X_API_SECRET
+        sync: false
+      - key: X_BEARER_TOKEN
+        sync: false
+      - key: X_ACCESS_TOKEN
+        sync: false
+      - key: X_ACCESS_TOKEN_SECRET
+        sync: false
+      - key: X_CLIENT_ID
+        sync: false
+      - key: X_CLIENT_SECRET
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
+
+  # Web API Service
+  - type: web
+    name: originstamp-api
+    runtime: python
+    region: oregon
+    plan: starter
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m spacy download en_core_web_sm
+    startCommand: python -m src.main api --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: originstamp-db
+          property: connectionString
+      - key: X_API_KEY
+        sync: false
+      - key: X_API_SECRET
+        sync: false
+      - key: X_BEARER_TOKEN
+        sync: false
+      - key: X_ACCESS_TOKEN
+        sync: false
+      - key: X_ACCESS_TOKEN_SECRET
+        sync: false
+      - key: X_CLIENT_ID
+        sync: false
+      - key: X_CLIENT_SECRET
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
+    healthCheckPath: /health
+
+databases:
+  - name: originstamp-db
+    plan: starter
+    region: oregon
+    postgresMajorVersion: "15"
