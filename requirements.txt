@@ -8,9 +8,11 @@ tweepy>=4.14.0
 # Database
 psycopg2-binary>=2.9.9
 
-# NLP/ML
+# NLP - spaCy only (lightweight)
 spacy>=3.7.2
-sentence-transformers>=2.2.2
+
+# NOTE: sentence-transformers removed to save ~4GB and speed up builds
+# The similarity detection falls back to text/token matching which works well
 
 # Image processing (for media hashing)
 imagehash>=4.3.1
