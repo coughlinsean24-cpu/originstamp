@@ -11,7 +11,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       python -m spacy download en_core_web_sm
-    startCommand: python -m src.main worker --mode poll --interval 300
+    startCommand: python -m src.main worker --mode poll --interval 900
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"

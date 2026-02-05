@@ -320,7 +320,8 @@ def poll_tracked_accounts(processor: TweetProcessor, interval_seconds: int = 60)
         try:
             for username, account_info in processor.tracked_accounts.items():
                 try:
-                    tweets = fetch_user_tweets(username, max_results=5)
+                    # Fetch more tweets since we poll less frequently (15 min)
+                    tweets = fetch_user_tweets(username, max_results=10)
 
                     for tweet_data in tweets:
                         tweet_id = str(tweet_data['id'])

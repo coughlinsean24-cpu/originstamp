@@ -7,9 +7,10 @@ from src.database import get_db_connection, get_connection_type
 
 logger = logging.getLogger(__name__)
 
-# MIDDLE EAST & IRAN FOCUSED
+# MIDDLE EAST & IRAN FOCUSED + WIRE SERVICES
 # Cost tracking: ~$0.003 per read, posts cheap
-# 15 accounts × 5 tweets × 12 polls/hr × 24h = ~21,600 reads/day (~$65/day)
+# 29 accounts × 10 tweets × 4 polls/hr × 24h = ~27,840 reads/day (~$84/day)
+# Much better coverage with less frequent polling (15 min intervals)
 
 # Tier 1A - OSINT (fastest breaking news)
 TIER_1A_OSINT = [
@@ -22,13 +23,35 @@ TIER_1A_OSINT = [
     ('IsraelRadar_com', 0.95, 'Israeli airspace/radar'),
 ]
 
-# Tier 1B - Official/Regional Sources
-TIER_1B_OFFICIAL = [
+# Tier 1B - Wire Services & Major Outlets
+TIER_1B_WIRE = [
+    ('Reuters', 0.99, 'Reuters news agency'),
+    ('ReutersWorld', 0.99, 'Reuters world news'),
+    ('AFP', 0.99, 'Agence France-Presse'),
+    ('AP', 0.99, 'Associated Press'),
+    ('AP_MiddleEast', 0.98, 'AP Middle East desk'),
+    ('BBCBreaking', 0.97, 'BBC Breaking News'),
+    ('BBCWorld', 0.96, 'BBC World News'),
+]
+
+# Tier 1C - Official/Regional Sources
+TIER_1C_OFFICIAL = [
     ('IDF', 0.95, 'Official IDF account'),
     ('AJABreaking', 0.90, 'Al Jazeera breaking - ME focus'),
     ('Aboriji', 0.85, 'Iran/IRGC watcher'),
     ('Iran_Int_TV', 0.82, 'Iran International'),
     ('IranIntl_En', 0.82, 'Iran International English'),
+]
+
+# Tier 1D - Key Journalists (ME specialists)
+TIER_1D_JOURNALISTS = [
+    ('baboramus', 0.92, 'Barak Ravid - Axios Israel'),
+    ('RichardEngel', 0.94, 'NBC Chief Foreign Correspondent'),
+    ('ClarissaWard', 0.94, 'CNN Chief International Correspondent'),
+    ('ragikipling', 0.90, 'Ragi Kipling - ME journalist'),
+    ('yaaboroham', 0.88, 'Yoav Limor - Israel defense correspondent'),
+    ('AmichaiStein1', 0.91, 'Amichai Stein - i24NEWS'),
+    ('eaborukah', 0.87, 'Evan Hill - NYT visual investigations'),
 ]
 
 # Tier 2 - Iran/Hezbollah Specialists
@@ -38,11 +61,6 @@ TIER_2_AMPLIFIER = [
     ('IntelCrab', 0.93, 'OSINT with Iran coverage'),
 ]
 
-# Disabled
-TIER_1C_WIRE = []
-TIER_3_VERIFICATION = []
-
-
 def seed_tracked_accounts():
     """Insert all seed accounts into the database"""
     with get_db_connection() as conn:
@@ -51,10 +69,10 @@ def seed_tracked_accounts():
 
         all_accounts = [
             ('1A_OSINT', TIER_1A_OSINT),
-            ('1B_OFFICIAL', TIER_1B_OFFICIAL),
-            ('1C_WIRE', TIER_1C_WIRE),
+            ('1B_WIRE', TIER_1B_WIRE),
+            ('1C_OFFICIAL', TIER_1C_OFFICIAL),
+            ('1D_JOURNALIST', TIER_1D_JOURNALISTS),
             ('2_AMPLIFIER', TIER_2_AMPLIFIER),
-            ('3_VERIFICATION', TIER_3_VERIFICATION),
         ]
 
         inserted = 0
