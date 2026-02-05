@@ -59,7 +59,7 @@ TIER_2_AMPLIFIER = [
 ]
 
 def seed_tracked_accounts():
-    """Insert all seed accounts into the database"""
+    """Insert all seed accounts into the database and remove old ones"""
     with get_db_connection() as conn:
         cur = conn.cursor()
         conn_type = get_connection_type()
@@ -71,6 +71,30 @@ def seed_tracked_accounts():
             ('1D_JOURNALIST', TIER_1D_JOURNALISTS),
             ('2_AMPLIFIER', TIER_2_AMPLIFIER),
         ]
+
+        # Collect all valid usernames
+        valid_usernames = []
+        for tier, accounts in all_accounts:
+            for account_data in accounts:
+                valid_usernames.append(account_data[0].lower())
+
+        # Delete accounts not in current list
+        if conn_type == 'postgresql':
+            placeholders = ','.join(['%s'] * len(valid_usernames))
+            cur.execute(f"""
+                DELETE FROM tracked_accounts
+                WHERE LOWER(account) NOT IN ({placeholders})
+            """, valid_usernames)
+        else:
+            placeholders = ','.join(['?'] * len(valid_usernames))
+            cur.execute(f"""
+                DELETE FROM tracked_accounts
+                WHERE LOWER(account) NOT IN ({placeholders})
+            """, valid_usernames)
+
+        deleted = cur.rowcount
+        if deleted > 0:
+            logger.info(f"Removed {deleted} old tracked accounts")
 
         inserted = 0
         for tier, accounts in all_accounts:
