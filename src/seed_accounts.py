@@ -7,28 +7,39 @@ from src.database import get_db_connection, get_connection_type
 
 logger = logging.getLogger(__name__)
 
-# Tier 1A - OSINT (Critical Priority)
-# REDUCED TO TOP 10 to conserve API quota
-# X Basic tier only allows 10,000 reads/month
+# MIDDLE EAST & IRAN FOCUSED
+# Cost tracking: ~$0.003 per read, posts cheap
+# 15 accounts × 5 tweets × 12 polls/hr × 24h = ~21,600 reads/day (~$65/day)
+
+# Tier 1A - OSINT (fastest breaking news)
 TIER_1A_OSINT = [
-    ('OSINTdefender', 0.98, 'Very fast, high volume, excellent sourcing'),
+    ('OSINTdefender', 0.98, 'Very fast ME coverage'),
     ('sentdefender', 0.97, 'Rapid breaking news'),
-    ('Faytuks', 0.96, 'Middle East conflicts, very active'),
-    ('Conflicts', 0.96, 'Conflict monitoring'),
-    ('IntelDoge', 0.95, 'Breaking news'),
+    ('Faytuks', 0.96, 'Middle East conflicts specialist'),
+    ('IntelDoge', 0.95, 'Breaking news ME focus'),
     ('WarMonitors', 0.95, 'War monitoring'),
-    ('GeoConfirmed', 0.96, 'Geolocation verification'),
-    ('AuroraIntel', 0.93, 'Satellite and geolocation'),
-    ('BNONews', 0.90, 'Breaking news aggregator'),
-    ('spectatorindex', 0.83, 'News aggregator'),
+    ('OSINT613', 0.97, 'Israel-specific OSINT'),
+    ('IsraelRadar_com', 0.95, 'Israeli airspace/radar'),
 ]
 
-# Other tiers disabled to conserve API quota
-# Uncomment if you have X Pro tier ($5k/month)
+# Tier 1B - Official/Regional Sources
+TIER_1B_OFFICIAL = [
+    ('IDF', 0.95, 'Official IDF account'),
+    ('AJABreaking', 0.90, 'Al Jazeera breaking - ME focus'),
+    ('Aboriji', 0.85, 'Iran/IRGC watcher'),
+    ('Iran_Int_TV', 0.82, 'Iran International'),
+    ('IranIntl_En', 0.82, 'Iran International English'),
+]
 
-TIER_1B_OFFICIAL = []
+# Tier 2 - Iran/Hezbollah Specialists
+TIER_2_AMPLIFIER = [
+    ('Joyce_Karam', 0.87, 'ME correspondent'),
+    ('haboriji', 0.85, 'Iran specialist'),
+    ('IntelCrab', 0.93, 'OSINT with Iran coverage'),
+]
+
+# Disabled
 TIER_1C_WIRE = []
-TIER_2_AMPLIFIER = []
 TIER_3_VERIFICATION = []
 
 
