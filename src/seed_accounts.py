@@ -8,112 +8,28 @@ from src.database import get_db_connection, get_connection_type
 logger = logging.getLogger(__name__)
 
 # Tier 1A - OSINT (Critical Priority)
+# REDUCED TO TOP 10 to conserve API quota
+# X Basic tier only allows 10,000 reads/month
 TIER_1A_OSINT = [
     ('OSINTdefender', 0.98, 'Very fast, high volume, excellent sourcing'),
     ('sentdefender', 0.97, 'Rapid breaking news'),
-    ('OSINT613', 0.97, 'Israel-specific, excellent sourcing'),
     ('Faytuks', 0.96, 'Middle East conflicts, very active'),
-    ('IsraelRadar_com', 0.95, 'Radar tracking, airspace activity'),
-    ('RerumNovarum_mg', 0.94, 'Geopolitical analysis, good sourcing'),
     ('Conflicts', 0.96, 'Conflict monitoring'),
     ('IntelDoge', 0.95, 'Breaking news'),
-    ('Archer83Able', 0.94, 'OSINT analysis'),
     ('WarMonitors', 0.95, 'War monitoring'),
-    ('Osinttechnical', 0.94, 'Technical OSINT'),
     ('GeoConfirmed', 0.96, 'Geolocation verification'),
-    ('TheIntelFrog', 0.93, 'Intelligence analysis'),
-    ('IntelCrab', 0.93, 'OSINT updates'),
-    ('Nrg8000', 0.92, 'Regional conflicts'),
     ('AuroraIntel', 0.93, 'Satellite and geolocation'),
-    ('detresfa_', 0.92, 'Visual verification'),
-    ('no_itsmyturn', 0.91, 'Geolocation specialist'),
-    ('CalibreObscura', 0.92, 'Weapons identification'),
-    ('IntelAir', 0.93, 'Aviation tracking'),
-    ('GlobeNetNews', 0.91, 'Global news'),
-    ('AirLiveNet', 0.92, 'Aviation incidents'),
-    ('AlertChannel', 0.91, 'Breaking alerts'),
-    ('Ninja_Warrior09', 0.90, 'OSINT monitoring'),
-    ('200_zoka', 0.89, 'Regional updates'),
-    ('worldonalert', 0.90, 'Global alerts'),
-    ('Sprinter99880', 0.89, 'Breaking news'),
-    ('TadeuszGiczan', 0.88, 'OSINT analyst'),
-    ('UAWeapons', 0.88, 'Weapons tracking'),
-    ('RALee85', 0.87, 'Military analysis'),
-    ('michaelh992', 0.87, 'OSINT updates'),
-    ('AggregateOsint', 0.88, 'Aggregated OSINT'),
-    ('clashreport', 0.87, 'Conflict reporting'),
-    ('manniefabian', 0.89, 'Israel defense correspondent'),
-    ('EylonALevy', 0.88, 'Israeli spokesperson'),
-    ('ynetalerts', 0.90, 'Israeli alerts'),
-    ('MiddleEastSpect', 0.87, 'ME specialist'),
-    ('ELINT_News', 0.88, 'Electronic intelligence'),
-    ('NotWoofers', 0.86, 'OSINT updates'),
-    ('CivMilAir', 0.87, 'Civil/military aviation'),
-    ('YWNReporter', 0.86, 'Breaking alerts'),
-    ('AlertsUkraine', 0.88, 'Regional conflicts'),
-    ('visegrad24', 0.85, 'European/ME news'),
-    ('KyleJGlen', 0.85, 'OSINT analyst'),
-    ('Apex_WW', 0.86, 'Worldwide monitoring'),
-]
-
-# Tier 1B - Official/Primary Sources
-TIER_1B_OFFICIAL = [
-    ('IDF', 0.95, 'Official IDF account'),
-    ('IDFSpokesperson', 0.95, 'IDF spokesperson'),
-    ('Jerusalem_Post', 0.88, 'Israeli news'),
-    ('kann_news', 0.87, 'Israeli public broadcaster'),
-    ('GLZRadio', 0.86, 'IDF radio'),
-    ('QudsNen', 0.82, 'Quds News Network'),
-    ('PalestineChron', 0.80, 'Palestinian news'),
-    ('AJABreaking', 0.90, 'Al Jazeera breaking'),
-    ('PressTV', 0.75, 'Iranian state media'),
-    ('Tasnimnews_EN', 0.76, 'Iranian news agency'),
-    ('FarsNews_Agency', 0.74, 'Iranian news'),
-    ('LebUpdate', 0.81, 'Lebanon updates'),
-    ('Hezb_Press', 0.75, 'Hezbollah region'),
-    ('SANA_English', 0.72, 'Syrian state media'),
-    ('Dannymakkisyria', 0.78, 'Syrian news'),
-]
-
-# Tier 1C - Wire Services
-TIER_1C_WIRE = [
-    ('Reuters', 0.98, 'Reuters wire'),
-    ('AP', 0.98, 'Associated Press'),
-    ('AFP', 0.97, 'Agence France-Presse'),
-    ('BBCBreaking', 0.96, 'BBC breaking'),
-    ('BBCWorld', 0.95, 'BBC World'),
-    ('AJENews', 0.92, 'Al Jazeera English'),
-    ('i24NEWS_EN', 0.88, 'i24 News'),
-]
-
-# Tier 2 - Fast Amplifiers
-TIER_2_AMPLIFIER = [
-    ('Joyce_Karam', 0.87, 'ME correspondent'),
-    ('MiddleEastEye', 0.85, 'ME news outlet'),
-    ('hxhassan', 0.86, 'Hassan Hassan analyst'),
-    ('Charles_Lister', 0.88, 'Syria expert'),
-    ('AbbasiMahdieh', 0.84, 'Iran analyst'),
-    ('Elizrael', 0.83, 'Israel/regional analyst'),
-    ('NatashaBertrand', 0.86, 'National security'),
-    ('JakobERobertson', 0.84, 'Regional analyst'),
-    ('BNONews', 0.90, 'Breaking news'),
+    ('BNONews', 0.90, 'Breaking news aggregator'),
     ('spectatorindex', 0.83, 'News aggregator'),
-    ('disclosetv', 0.82, 'Breaking news'),
-    ('Breaking911', 0.81, 'Breaking news'),
-    ('MiddleEastMnt', 0.82, 'ME monitor'),
-    ('IsraelWarRoom', 0.80, 'Israel updates'),
-    ('Gaza_Notifications', 0.78, 'Gaza updates'),
-    ('Lebanon_News_', 0.79, 'Lebanon news'),
-    ('YemenWar_', 0.77, 'Yemen conflict'),
-    ('SyriaCivilWar_', 0.76, 'Syria conflict'),
 ]
 
-# Tier 3 - Verification/Fact-Check
-TIER_3_VERIFICATION = [
-    ('bellingcat', 0.95, 'Investigative journalism'),
-    ('N_Waters89', 0.93, 'Nick Waters - Bellingcat'),
-    ('elintnews', 0.91, 'Electronic intelligence'),
-]
+# Other tiers disabled to conserve API quota
+# Uncomment if you have X Pro tier ($5k/month)
+
+TIER_1B_OFFICIAL = []
+TIER_1C_WIRE = []
+TIER_2_AMPLIFIER = []
+TIER_3_VERIFICATION = []
 
 
 def seed_tracked_accounts():
